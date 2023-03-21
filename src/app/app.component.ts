@@ -8,15 +8,6 @@ import { CharactersListComponent } from './components/characters-list/characters
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   standalone: true,
-  imports: [CharactersListComponent]
+  imports: [CharactersListComponent],
 })
-export class AppComponent {
-  title = 'skillbox';
-
-  constructor(private cService: CharactersService) {}
-
-  click() {
-    this.cService.getAllCharacters();
-    console.log(this.cService.characters$);
-  }
-}
+export class AppComponent {}

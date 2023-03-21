@@ -2,7 +2,16 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { CharacterInterface } from './character.interface';
-import { BehaviorSubject, Subject, Subscriber, catchError, filter, retry, throwError } from 'rxjs';
+import {
+  BehaviorSubject,
+  Subject,
+  Subscriber,
+  catchError,
+  filter,
+  retry,
+  throwError,
+  map,
+} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -11,7 +20,8 @@ export class CharactersService {
   baseUrl = 'https://akabab.github.io/starwars-api/api';
   routeAll = '/all.json';
   routeId = '/id';
-  characters$ = new BehaviorSubject<CharacterInterface[]>([]);
+  charactersFetched$ = new BehaviorSubject<CharacterInterface[]>([]);
+  filteredCharacters$ = new BehaviorSubject<CharacterInterface[]>([]);
 
   constructor(private http: HttpClient) {}
 
@@ -19,15 +29,29 @@ export class CharactersService {
     const req = this.http
       .get<CharacterInterface[]>(this.baseUrl + this.routeAll)
       .pipe(retry(5), catchError(this.handleError))
-      .subscribe((data) => this.characters$.next(data));
+      .subscribe((data) => {
+        this.charactersFetched$.next(data);
+        this.filteredCharacters$.next(data);
+      });
   }
 
   searchCharacter(data: string) {
+    if (data === '') {
+      this.filteredCharacters$.next(this.charactersFetched$.value);
+      console.log('Empty string');
+      console.log(this.charactersFetched$.value);
+      console.log(this.filteredCharacters$.value);
+      return;
+    }
     console.log('Search in Service: ', data);
-    const subscription$ = this.characters$.pipe(
-      filter((el, i) => el[i].name === data)
-    );
-    subscription$.subscribe(data => this.characters$.next(data))
+    const subs = this.charactersFetched$
+      .pipe(
+        map((characters) =>
+          characters.filter((character) => character.name == data)
+        )
+      )
+      .subscribe((value) => this.filteredCharacters$.next(value));
+    subs.unsubscribe();
   }
 
   private handleError(error: HttpErrorResponse) {

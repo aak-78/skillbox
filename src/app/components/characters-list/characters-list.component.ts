@@ -16,7 +16,7 @@ export class CharactersListComponent implements OnInit {
 
   ngOnInit(): void {
     this.cService.getAllCharacters();
-    console.log(this.cService.characters$);
+    console.log(this.cService.filteredCharacters$);
   }
 
   onSearch(event: string) {
