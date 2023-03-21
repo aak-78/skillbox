@@ -1,0 +1,30 @@
+.card__wrapper {
+  --card-width: 300px;
+  --card-hight: 300px;
+
+  width: var(--card-width);
+  height: var(--card-hight);
+  padding: 1rem;
+  margin: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  background: lightsteelblue;
+}
+
+img {
+  height: 100%;
+  max-width: var(--card-width);
+  border-radius: 8px;
+  margin: auto;
+}
+
+.card__img-wrapper {
+  height: calc(var(--card-hight) - 2rem);
+  padding-bottom: 1rem;
+  display: flex;
+}
+
+p {
+  text-align: center;
+  font-weight: 600;
+}
