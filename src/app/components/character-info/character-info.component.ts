@@ -13,12 +13,13 @@ import { CharactersService } from '../../shared/characters.service';
 export class CharacterInfoComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
-    private cService: CharactersService
+    public cService: CharactersService
   ) {}
 
   ngOnInit(): void {
-    const id = Number(this.route.snapshot.params['id']);
-    const character = this.cService.charactersFetched$.value[id];
-    console.log('Card info: ', character);
+    // this.cService.getAllCharacters()
+    // const id = Number(this.route.snapshot.params['id']);
+    // const character = this.cService.charactersFetched$.value
+    // console.log('Card info: ', id,  character);
   }
 }

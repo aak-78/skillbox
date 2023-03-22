@@ -1,5 +1,5 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, OnInit } from '@angular/core';
 
 import { CharacterInterface } from './character.interface';
 import { BehaviorSubject, catchError, retry, throwError, map } from 'rxjs';
@@ -7,25 +7,70 @@ import { BehaviorSubject, catchError, retry, throwError, map } from 'rxjs';
 @Injectable({
   providedIn: 'root',
 })
-export class CharactersService {
+export class CharactersService implements OnInit {
   baseUrl = 'https://akabab.github.io/starwars-api/api';
   routeAll = '/all.json';
   routeId = '/id';
+
+  //Персонажы полученные с ЛокалСтердж или по API
   charactersFetched$ = new BehaviorSubject<CharacterInterface[]>([]);
+
+  //Персонажи для рендеринга после фильтрации. Позволяет при сбросе фильтрации снова показать всех персонажей.
   filteredCharacters$ = new BehaviorSubject<CharacterInterface[]>([]);
+  
+  //Ловим ошибку для отображения в шаблоне. Не стал делать спинеры в процессе загрузки, все достаточно быстро и плюс работаем в основном с локалстореджем, кроме картинок.
+  fetchError$ = new BehaviorSubject<boolean>(false);
 
-  constructor(private http: HttpClient) {}
 
-  getAllCharacters() {
-    const req = this.http
-      .get<CharacterInterface[]>(this.baseUrl + this.routeAll)
-      .pipe(retry(5), catchError(this.handleError))
-      .subscribe((data) => {
-        this.charactersFetched$.next(data);
-        this.filteredCharacters$.next(data);
-      });
+  constructor(private http: HttpClient) {
+    this.fetchError$.next(false);
+    
+  }
+  ngOnInit(): void {
+    this.fetchError$.next(false);
   }
 
+  // Функция для получения данных. Изначально проверяет ЛокалСторедж, если пусто лезет в API
+  // При получении данных через API сохраняем в ЛокалСторедж
+  getAllCharacters() {
+    const localStorageData = this.fetchCharactersLocal();
+    this.fetchError$.next(false)
+    if (localStorageData) {
+      this.charactersFetched$.next(localStorageData);
+      this.filteredCharacters$.next(localStorageData);
+    } else {
+      const req = this.http
+        .get<CharacterInterface[]>(this.baseUrl + this.routeAll)
+        .pipe(retry(5),
+          catchError((err) => {
+            return this.handleError(err)
+          }
+          ))
+        // catchError(this.handleError)) - В таком варианте не работает пространство имен в хендлере - хендлер не видит переменные и Объекты из Класса.
+        .subscribe((data) => {
+          this.charactersFetched$.next(data);
+          this.filteredCharacters$.next(data);
+          this.saveCharactersLocal(data);
+        });
+    }
+    return this.charactersFetched$;
+  }
+
+  //Сохраняем всех персонажей в ЛокалСторедж
+  saveCharactersLocal(value: CharacterInterface[]) {
+    localStorage.setItem('characters', JSON.stringify(value));
+  }
+
+  //Получаем всех персонажей из ЛокалСторедж, если ничего нет - возвращаем явно false
+  fetchCharactersLocal() {
+    const charLocal = localStorage.getItem('characters');
+    if (charLocal) {
+      return JSON.parse(charLocal);
+    }
+    return false;
+  }
+
+  //Функция поиска по базе персонажей по введенной строке. Поиск идет по каждому слову и по части слова. Плюс перед проверкой все приводится к ЛоверКейс для более качественного поиска.
   searchCharacter(data: string) {
     if (data === '') {
       this.filteredCharacters$.next(this.charactersFetched$.value);
@@ -46,7 +91,11 @@ export class CharactersService {
     subs.unsubscribe();
   }
 
+  //Ловим ошибки по API обычный хендлер плюс ставим ошибку в ФетчЭррор
   private handleError(error: HttpErrorResponse) {
+    console.log('ERROR');
+    this.fetchError$.next(true)
+
     if (error.status === 0) {
       // A client-side or network error occurred. Handle it accordingly.
       console.error('An error occurred:', error.error);

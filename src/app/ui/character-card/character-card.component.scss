@@ -11,6 +11,10 @@
   background: lightsteelblue;
 }
 
+.card__wrapper:hover {
+  opacity: 0.85;
+}
+
 img {
   height: 100%;
   max-width: var(--card-width);

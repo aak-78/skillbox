@@ -2,11 +2,17 @@
 <div class="text-center">
   <app-search-bar (newSearch)="onSearch($event)"></app-search-bar>
 </div>
-<div
-  *ngIf="cService.filteredCharacters$ | async as characters"
-  class="list__wrapper"
->
-  <ng-container *ngFor="let character of characters">
-    <app-character-card [character]="character"></app-character-card>
-  </ng-container>
+<div *ngIf="cService.fetchError$ | async; else elseBlock">
+  <app-fetcherror></app-fetcherror>
 </div>
+
+<ng-template #elseBlock>
+  <div
+    *ngIf="cService.filteredCharacters$ | async as characters"
+    class="list__wrapper"
+  >
+    <ng-container *ngFor="let character of characters">
+      <app-character-card [character]="character"></app-character-card>
+    </ng-container>
+  </div>
+</ng-template>
