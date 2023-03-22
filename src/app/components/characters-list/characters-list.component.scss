@@ -8,3 +8,11 @@
 .text-center {
   text-align: center;
 }
+
+.card-list__pagination {
+  padding: 1rem 0.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+
+}

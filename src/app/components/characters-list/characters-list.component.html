@@ -7,12 +7,19 @@
 </div>
 
 <ng-template #elseBlock>
+  <div class="card-list__pagination">
+
+    <app-pagination
+    [currentPage]="currentPage"
+    [totalPages]="cService.totalPages$.value"
+    ></app-pagination>
+  </div>
   <div
     *ngIf="cService.filteredCharacters$ | async as characters"
     class="list__wrapper"
   >
-    <ng-container *ngFor="let character of characters">
-      <app-character-card [character]="character"></app-character-card>
+    <ng-container *ngFor="let character of characters; index as i ">
+      <app-character-card [character]="character" [index]="i"></app-character-card>
     </ng-container>
   </div>
 </ng-template>

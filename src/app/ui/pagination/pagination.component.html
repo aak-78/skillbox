@@ -1,1 +1,39 @@
-<p>pagination works!</p>
+<!-- <a *ngFor="let page of pagesArray">{{ page }}</a> -->
+<p>Выберите нужную страницу</p>
+
+<a *ngIf="currentPage > 3" routerLink="/list/1">1 <<-</a>
+<a *ngIf="currentPage - 1 > 1" routerLink="/list/{{ currentPage - 1 }}">
+  {{ currentPage - 1 }} <<
+</a>
+<a *ngIf="currentPage - 1 > 1" routerLink="/list/{{ currentPage - 2 }}">
+  {{ currentPage - 2 }}
+</a>
+<a *ngIf="currentPage > 1" routerLink="/list/{{ currentPage - 1 }}">
+  {{ currentPage - 1 }}
+</a>
+<a *ngIf="cService.totalPages$.value > 1" class="current">
+  {{ currentPage }}
+</a>
+<a
+  *ngIf="cService.totalPages$.value >= currentPage + 1"
+  routerLink="/list/{{ currentPage + 1 }}"
+>
+  {{ currentPage + 1 }}
+</a>
+<a
+  *ngIf="cService.totalPages$.value >= currentPage + 2"
+  routerLink="/list/{{ currentPage + 2 }}"
+>
+  {{ currentPage + 2 }}
+</a>
+<a
+  *ngIf="cService.totalPages$.value > currentPage + 1"
+  routerLink="/list/{{ currentPage + 1 }}"
+>
+  {{ currentPage + 1 }} ></a
+><a
+  *ngIf="cService.totalPages$.value > currentPage + 2"
+  routerLink="/list/{{ cService.totalPages$.value }}"
+>
+  >> {{ cService.totalPages$.value }}
+</a>

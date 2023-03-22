@@ -13,7 +13,7 @@ const ROUTES: Route[] = [
   {
     path: 'hero',
     loadComponent: () =>
-      import('./components/character-info/character-info.component').then(
+      import('./components/character-info/character-detail.component').then(
         (mod) => mod.CharacterInfoComponent
       ),
   },

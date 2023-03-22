@@ -1,13 +1,21 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Injectable, OnInit } from '@angular/core';
+import { Injectable, OnDestroy, OnInit } from '@angular/core';
 
 import { CharacterInterface } from './character.interface';
-import { BehaviorSubject, catchError, retry, throwError, map } from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  retry,
+  throwError,
+  map,
+  Subject,
+  Subscription,
+} from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
-export class CharactersService implements OnInit {
+export class CharactersService implements OnDestroy {
   baseUrl = 'https://akabab.github.io/starwars-api/api';
   routeAll = '/all.json';
   routeId = '/id';
@@ -17,35 +25,42 @@ export class CharactersService implements OnInit {
 
   //Персонажи для рендеринга после фильтрации. Позволяет при сбросе фильтрации снова показать всех персонажей.
   filteredCharacters$ = new BehaviorSubject<CharacterInterface[]>([]);
-  
+
   //Ловим ошибку для отображения в шаблоне. Не стал делать спинеры в процессе загрузки, все достаточно быстро и плюс работаем в основном с локалстореджем, кроме картинок.
   fetchError$ = new BehaviorSubject<boolean>(false);
-
+  cardsOnPage = 10;
+  totalCards = 0;
+  totalPages$ = new BehaviorSubject<number>(0);
+  subs: Subscription;
 
   constructor(private http: HttpClient) {
     this.fetchError$.next(false);
-    
+    this.subs = this.filteredCharacters$.subscribe((value) =>
+      this.totalPages$.next(Math.ceil(value.length / this.cardsOnPage))
+    );
   }
-  ngOnInit(): void {
-    this.fetchError$.next(false);
+
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
   }
 
   // Функция для получения данных. Изначально проверяет ЛокалСторедж, если пусто лезет в API
   // При получении данных через API сохраняем в ЛокалСторедж
   getAllCharacters() {
     const localStorageData = this.fetchCharactersLocal();
-    this.fetchError$.next(false)
+    this.fetchError$.next(false);
     if (localStorageData) {
       this.charactersFetched$.next(localStorageData);
       this.filteredCharacters$.next(localStorageData);
     } else {
       const req = this.http
         .get<CharacterInterface[]>(this.baseUrl + this.routeAll)
-        .pipe(retry(5),
+        .pipe(
+          retry(5),
           catchError((err) => {
-            return this.handleError(err)
-          }
-          ))
+            return this.handleError(err);
+          })
+        )
         // catchError(this.handleError)) - В таком варианте не работает пространство имен в хендлере - хендлер не видит переменные и Объекты из Класса.
         .subscribe((data) => {
           this.charactersFetched$.next(data);
@@ -94,7 +109,7 @@ export class CharactersService implements OnInit {
   //Ловим ошибки по API обычный хендлер плюс ставим ошибку в ФетчЭррор
   private handleError(error: HttpErrorResponse) {
     console.log('ERROR');
-    this.fetchError$.next(true)
+    this.fetchError$.next(true);
 
     if (error.status === 0) {
       // A client-side or network error occurred. Handle it accordingly.

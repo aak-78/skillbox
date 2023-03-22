@@ -9,7 +9,11 @@ export const ROUTES: Route[] = [
     children: [
       {
         path: '',
+        redirectTo: '/list/1',
         pathMatch: 'full',
+        },
+      {
+        path: 'list/:p',
         resolve: { CharacterListResolver },
         loadComponent: () =>
           import('./components/characters-list/characters-list.component').then(
@@ -17,10 +21,10 @@ export const ROUTES: Route[] = [
           ),
       },
       {
-        path: ':id/detail',
+        path: 'detail/:id',
         resolve: { CharacterListResolver },
         loadComponent: () =>
-          import('./components/character-info/character-info.component').then(
+          import('./components/character-info/character-detail.component').then(
             (mod) => mod.CharacterInfoComponent
           ),
       },

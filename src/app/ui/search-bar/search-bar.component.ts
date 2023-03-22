@@ -18,7 +18,7 @@ import { FormsModule } from '@angular/forms';
     </form>
   `,
   styles: [
-    '* {font-size: 1.25rem; margin: 1.25rem 0.25rem; padding: 1rem 0.5rem; border-radius: 0.25rem} button{cursor: pointer}',
+    '* {font-size: 1.25rem; margin: 1.25rem 0.25rem; padding: 1rem 0.5rem; border-radius: 0.25rem; cursor: pointer;} button{background: var(--body-accent); padding-inline: 1rem}',
   ],
 })
 export class SearchBarComponent {

@@ -1,4 +1,5 @@
 export interface CharacterInterface {
+  [x: string]: any;
   id: number;
   name: string;
   height: number;

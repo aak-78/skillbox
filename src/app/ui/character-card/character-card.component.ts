@@ -1,11 +1,12 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CharacterInterface } from '../../shared/character.interface';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-character-card',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './character-card.component.html',
   styleUrls: ['./character-card.component.scss'],
 })
@@ -33,6 +34,7 @@ export class CharacterCardComponent {
     apprentices: [],
     formerAffiliations: [],
   };
+  @Input() index: number = 0
 
   public handleMissingImage(event: Event) {
     (event.target as HTMLImageElement).style.display = 'none';

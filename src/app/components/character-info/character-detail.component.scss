@@ -1,0 +1,27 @@
+div {
+}
+.card__wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+img {
+  max-width: 300px;
+}
+
+button {
+  padding: 1rem 3rem;
+  margin-bottom: 2rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  background: var(--body-accent);
+}
+
+button:hover{
+  opacity: 0.7;
+}
