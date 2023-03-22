@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
+import { RouterModule } from '@angular/router';
 
-import { CharactersService } from './shared/characters.sevice';
 import { CharactersListComponent } from './components/characters-list/characters-list.component';
 
 @Component({
@@ -8,6 +8,6 @@ import { CharactersListComponent } from './components/characters-list/characters
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   standalone: true,
-  imports: [CharactersListComponent],
+  imports: [CharactersListComponent, RouterModule],
 })
 export class AppComponent {}

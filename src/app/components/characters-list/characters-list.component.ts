@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CharactersService } from '../../shared/characters.sevice';
+import { CharactersService } from '../../shared/characters.service';
 import { CharacterCardComponent } from '../../ui/character-card/character-card.component';
 import { SearchBarComponent } from 'src/app/ui/search-bar/search-bar.component';
 

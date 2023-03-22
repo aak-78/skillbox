@@ -2,16 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { CharacterInterface } from './character.interface';
-import {
-  BehaviorSubject,
-  Subject,
-  Subscriber,
-  catchError,
-  filter,
-  retry,
-  throwError,
-  map,
-} from 'rxjs';
+import { BehaviorSubject, catchError, retry, throwError, map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -39,15 +30,16 @@ export class CharactersService {
     if (data === '') {
       this.filteredCharacters$.next(this.charactersFetched$.value);
       console.log('Empty string');
-      console.log(this.charactersFetched$.value);
-      console.log(this.filteredCharacters$.value);
       return;
     }
+    const searchValue = new RegExp(data.toLocaleLowerCase());
     console.log('Search in Service: ', data);
     const subs = this.charactersFetched$
       .pipe(
         map((characters) =>
-          characters.filter((character) => character.name == data)
+          characters.filter((character) => {
+            return searchValue.test(character.name.toLocaleLowerCase());
+          })
         )
       )
       .subscribe((value) => this.filteredCharacters$.next(value));
