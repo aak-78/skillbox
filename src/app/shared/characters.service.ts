@@ -20,7 +20,7 @@ export class CharactersService implements OnDestroy {
   routeAll = '/all.json';
   routeId = '/id';
 
-  //Персонажы полученные с ЛокалСтердж или по API
+  //Персонажы полученные по API и фильтруемые
   charactersFetched$ = new BehaviorSubject<CharacterInterface[]>([]);
   //Персонажи на текущей странице.
   characters$ = new BehaviorSubject<CharacterInterface[]>([]);
@@ -60,57 +60,46 @@ export class CharactersService implements OnDestroy {
     console.log('------------------------------');
     console.log('dataFetched: ', this.dataFetched);
 
-    // currentPage ? console.log('true', currentPage)
-    //   : console.log('false', currentPage);
-
-    //Получаем текущую страницу и устанавливаем -ПРОВЕРКА?
-    currentPage
-      ? this.currentPage$.next(Number(currentPage))
-      : this.currentPage$.next(Number(1));
-
     console.log(
       'charactersFetched at Resolve start ',
       this.charactersFetched$.value
     );
     console.log('characters at Resolve start ', this.characters$.value);
 
-    if (!this.dataFetched) {
-      //Получем полный список персонажей
-      console.log('start fetch data');
-      // newCharacters = this.fetchLocalStorage('characters', 'object');
-      // console.log('newCharacters from LS', newCharacters);
+    //Блок загрузки данные и вычисления значений для страницы с карточками card-lists
 
+    //Получаем текущую страницу и устанавливаем
+    // currentPage
+    //   ? this.currentPage$.next(currentPage)
+    //   : this.currentPage$.next(1);
+
+    //Проверяем загружены ли данные
+    if (!this.dataFetched) {
+      // Если данные не загружены - получем полный список персонажей
+      console.log('start fetch data');
       this.subs = this.fetchDataApi().subscribe((value) => {
+        console.log('Fetched data from API (value): ', value);
         this.charactersFetched$.next(value);
         this.pages$.next(this.getTotalPages(value));
-        this.characters$.next(this.getCardsOnCurrentPage(value));
+        this.characters$.next(this.getCardsOnCurrentPage(value, '', 1));
+        currentPage && currentPage <= this.getTotalPages(value)
+          ? this.currentPage$.next(currentPage)
+          : this.currentPage$.next(1);
       });
 
-      // if (newCharacters.length) {
-      //   this.charactersFetched$.next(newCharacters);
-      //   this.characters$.next(newCharacters);
-      //   this.pages$.next(this.getTotalPages(newCharacters));
-      // } else {
-
-      // }
-
       this.dataFetched = true;
+    } else {
+      //Блок вычислений если данные загружены
+      currentPage && currentPage <= this.pages$.value
+        ? this.currentPage$.next(currentPage)
+        : this.currentPage$.next(1);
+
+      this.pages$.next(this.getTotalPages());
+      this.characters$.next(this.getCardsOnCurrentPage());
+      this.getTotalPages();
     }
 
-    // newCurrentPage = this.fetchLocalStorage('currentPage', 'number');
-    // if (newCurrentPage) {
-    //   this.currentPage$.next(newCurrentPage);
-    // } else {
-    //   this.currentPage$.next(1);
-    // }
-
-    // newSearchRequest = this.fetchLocalStorage('searchRequest', 'string');
-    // if (newSearchRequest) {
-    //   this.searchRequest$.next(newSearchRequest);
-    // } else {
-    //   this.searchRequest$.next('');
-    // }
-
+    //Блок вывода на консоль
     console.log('currentPAge ', this.currentPage$.value);
     console.log('characters ', this.characters$.value.length);
     console.log(
@@ -118,22 +107,6 @@ export class CharactersService implements OnDestroy {
       this.charactersFetched$.value.length
     );
 
-    if (this.characters$.value.length == 0) {
-      this.subs = this.charactersFetched$.subscribe((value) =>
-        this.characters$.next(this.getCardsOnCurrentPage(value))
-      );
-    }
-
-    this.currentPage$.subscribe((value) =>
-      this.getCardsOnCurrentPage(
-        this.characters$.value,
-        this.searchRequest$.value,
-        value
-      )
-    );
-    this.searchRequest$.subscribe((value) =>
-      this.calculateDataForCardListComponent()
-    );
     this.saveLocalStorage();
     console.log('dataFetched at the end of Resolver', this.dataFetched);
     return this.characters$;
@@ -149,23 +122,6 @@ export class CharactersService implements OnDestroy {
     );
     // const subs =  this.currentPage$.subscribe(value => this.getCardsOnCurrentPage(this.characters$.value,this.searchRequest$.value,pageNumber, 10))
   }
-
-  //Обновление информации на странице - цент пересчета всего
-  calculateDataForCardListComponent(
-    searchRequest: string = this.searchRequest$.value,
-    currentPage: number = this.currentPage$.value,
-    cardsOnPage: number = this.cardsOnPage$.value
-  ) {
-    const totalPages = this.getTotalPages(
-      this.characters$.value,
-      this.cardsOnPage$.value
-    );
-    //1 Фильтруем по поиску
-    //2 Получаем число страниц после фильтрации по поиску
-    //3 Карточки на текущую страницу. Проверить - текущая страница ок или нет???
-  }
-
-  //Метод отработки кнопки поиска
 
   //Все грузим с нуля
   fetchDataApi() {
@@ -189,22 +145,25 @@ export class CharactersService implements OnDestroy {
     cardsOnPage: number = this.cardsOnPage$.value
   ) {
     if (searchRequest !== '') {
-      this.pages$.next(this.getTotalPages(characters));
       return this.filterCardsByCurentPage(
         this.filterCardsBuSearch(characters, searchRequest),
-        currentPage,
+        currentPage - 1,
         cardsOnPage
       );
     } else {
       this.pages$.next(this.getTotalPages(characters));
       this.getTotalPages();
-      return this.filterCardsByCurentPage(characters, currentPage, cardsOnPage);
+      return this.filterCardsByCurentPage(
+        characters,
+        currentPage - 1,
+        cardsOnPage
+      );
     }
   }
 
   //Считаем сколько страниц с учетом фильтрации
   getTotalPages(
-    characters: CharacterInterface[] = this.characters$.value,
+    characters: CharacterInterface[] = this.charactersFetched$.value,
     cardsOnPage: number = this.cardsOnPage$.value
   ) {
     return Math.ceil(characters.length / cardsOnPage);
