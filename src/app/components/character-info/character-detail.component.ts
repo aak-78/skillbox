@@ -34,7 +34,7 @@ export class CharacterInfoComponent implements OnInit {
     affiliations: [],
     masters: [],
     apprentices: [],
-    formerAffiliations: []
+    formerAffiliations: [],
   };
 
   constructor(
@@ -48,7 +48,7 @@ export class CharacterInfoComponent implements OnInit {
     // const character = this.cService.charactersFetched$.value
     // console.log('Card info: ', id,  character);
     this.id = this.route.snapshot.params['id'];
-    this.character = this.cService.filteredCharacters$.value[this.id]
+    this.character = this.cService.characters$.value[this.id];
     console.log(this.id);
   }
 }

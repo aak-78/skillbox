@@ -1,39 +1,41 @@
 <!-- <a *ngFor="let page of pagesArray">{{ page }}</a> -->
 <p>Выберите нужную страницу</p>
+{{cService.currentPage$.value}}
+{{cService.pages$.value}}
 
-<a *ngIf="currentPage > 3" routerLink="/list/1">1 <<-</a>
-<a *ngIf="currentPage - 1 > 1" routerLink="/list/{{ currentPage - 1 }}">
-  {{ currentPage - 1 }} <<
+<a *ngIf="cService.currentPage$.value > 3" routerLink="/list/1">1 <<-</a>
+<a *ngIf="cService.currentPage$.value - 1 > 1" routerLink="/list/{{ cService.currentPage$.value - 1 }}">
+  < {{ cService.currentPage$.value - 1 }}
 </a>
-<a *ngIf="currentPage - 1 > 1" routerLink="/list/{{ currentPage - 2 }}">
-  {{ currentPage - 2 }}
+<a *ngIf="cService.currentPage$.value - 1 > 1" routerLink="/list/{{ cService.currentPage$.value - 2 }}">
+  {{ cService.currentPage$.value - 2 }}
 </a>
-<a *ngIf="currentPage > 1" routerLink="/list/{{ currentPage - 1 }}">
-  {{ currentPage - 1 }}
+<a *ngIf="cService.currentPage$.value > 1" routerLink="/list/{{ cService.currentPage$.value - 1 }}">
+  {{ cService.currentPage$.value - 1 }}
 </a>
-<a *ngIf="cService.totalPages$.value > 1" class="current">
-  {{ currentPage }}
-</a>
-<a
-  *ngIf="cService.totalPages$.value >= currentPage + 1"
-  routerLink="/list/{{ currentPage + 1 }}"
->
-  {{ currentPage + 1 }}
+<a *ngIf="cService.pages$.value > 1" class="current">
+  {{ cService.currentPage$.value }}
 </a>
 <a
-  *ngIf="cService.totalPages$.value >= currentPage + 2"
-  routerLink="/list/{{ currentPage + 2 }}"
+  *ngIf="cService.pages$.value >= cService.currentPage$.value + 1"
+  routerLink="/list/{{ cService.currentPage$.value + 1 }}"
 >
-  {{ currentPage + 2 }}
+  {{ cService.currentPage$.value + 1 }}
 </a>
 <a
-  *ngIf="cService.totalPages$.value > currentPage + 1"
-  routerLink="/list/{{ currentPage + 1 }}"
+  *ngIf="cService.pages$.value >= cService.currentPage$.value + 2"
+  routerLink="/list/{{ cService.currentPage$.value + 2 }}"
 >
-  {{ currentPage + 1 }} ></a
+  {{ cService.currentPage$.value + 2 }}
+</a>
+<a
+  *ngIf="cService.pages$.value > cService.currentPage$.value + 1"
+  routerLink="/list/{{ cService.currentPage$.value + 1 }}"
+>
+  {{ cService.currentPage$.value + 1 }} ></a
 ><a
-  *ngIf="cService.totalPages$.value > currentPage + 2"
-  routerLink="/list/{{ cService.totalPages$.value }}"
+  *ngIf="cService.pages$.value > cService.currentPage$.value + 2"
+  routerLink="/list/{{ cService.pages$.value }}"
 >
-  >> {{ cService.totalPages$.value }}
+  >> {{ cService.pages$.value }}
 </a>

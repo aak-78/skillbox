@@ -1,4 +1,9 @@
 <h1 class="text-center">Добро пожаловать на сайт персонажей из Star Wars</h1>
+<p>
+  <!-- currentPage: {{ cService.currentPage$.value }}
+  pages: {{ cService.pages$.value }}
+  characters: {{ cService.characters$.value| json}} -->
+</p>
 <div class="text-center">
   <app-search-bar (newSearch)="onSearch($event)"></app-search-bar>
 </div>
@@ -8,18 +13,14 @@
 
 <ng-template #elseBlock>
   <div class="card-list__pagination">
-
-    <app-pagination
-    [currentPage]="currentPage"
-    [totalPages]="cService.totalPages$.value"
-    ></app-pagination>
+    <app-pagination></app-pagination>
   </div>
-  <div
-    *ngIf="cService.filteredCharacters$ | async as characters"
-    class="list__wrapper"
-  >
-    <ng-container *ngFor="let character of characters; index as i ">
-      <app-character-card [character]="character" [index]="i"></app-character-card>
+  <div *ngIf="characters" class="list__wrapper">
+    <ng-container *ngFor="let character of characters; index as i">
+      <app-character-card
+        [character]="character"
+        [index]="i"
+      ></app-character-card>
     </ng-container>
   </div>
 </ng-template>

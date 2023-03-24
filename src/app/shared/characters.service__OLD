@@ -1,0 +1,242 @@
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Injectable, OnDestroy, OnInit } from '@angular/core';
+
+import { CharacterInterface } from './character.interface';
+import { Router } from '@angular/router';
+import {
+  BehaviorSubject,
+  catchError,
+  retry,
+  throwError,
+  map,
+  Subscription,
+} from 'rxjs';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class  implements OnDestroy {
+  //Точка входа в API
+  baseUrl = 'https://akabab.github.io/starwars-api/api';
+  routeAll = '/all.json';
+  routeId = '/id';
+
+  //Персонажы полученные с ЛокалСтердж или по API
+  charactersFetched$ = new BehaviorSubject<CharacterInterface[]>([]);
+
+  //Персонажи для рендеринга после фильтрации. Позволяет при сбросе фильтрации снова показать всех персонажей.
+  filteredCharacters$ = new BehaviorSubject<CharacterInterface[]>([]);
+  //Персонажи для рендеринга после фильтрации. Позволяет при сбросе фильтрации снова показать всех персонажей.
+  filteredCharactersOnCurrentPage$ = new BehaviorSubject<CharacterInterface[]>(
+    []
+  );
+
+  //Ловим ошибку для отображения в шаблоне. Не стал делать спинеры в процессе загрузки, все достаточно быстро и плюс работаем в основном с локалстореджем, кроме картинок.
+  fetchError$ = new BehaviorSubject<boolean>(false);
+
+  //Данные главной страницы
+  //Всего карточек для сравнения по номеру страницы в URL /list/:p
+  totalCards$ = new BehaviorSubject<number>(0);
+  // Всего карточек персонажей после фильтрации по отбору
+  totalCardsFiltered$ = new BehaviorSubject<number>(0);
+  //Всего страниц
+  // totalPages$ = new BehaviorSubject<number>(0);
+  //Всего страниц с учетом фильтрации
+  totalPagesFiltered$ = new BehaviorSubject<number>(0);
+
+  //Карточек на странице
+  cardsOnPage$ = new BehaviorSubject<number>(10);
+
+  //Текущая страница - получаем из карт-лист
+  currentPage$ = new BehaviorSubject<number>(1);
+  //Текущий запрос поиска
+  searchRequest$ = new BehaviorSubject<string>('');
+
+  //Данные загружены
+  dataFetched$ = new BehaviorSubject<boolean>(false);
+  //Подписка для отписки
+  subs!: Subscription;
+  
+  constructor(private http: HttpClient, private router: Router) {
+    console.log('Service Constructor started');
+    this.fetchError$.next(false);
+    this.serviceInitialization();
+  }
+  
+  serviceInitialization() {
+    //Получаем подписку на расчет страниц по всем пользователям
+
+    // this.subs = this.filteredCharacters$.subscribe((value) =>
+    //   this.filteredCharactersOnCurrentPage$.next(
+    //     this.filteredCharacters$.value.slice(0, this.cardsOnPage$.value)
+    //   )
+    // );
+
+    //Секция инициализации методов и свойств
+    //1 Получаем персонажей
+    // - запускаем getAllCharacters() через резолвер. Получаем строго всех персонажей.
+
+    //3 Получаем отфильтрованных персонажей
+    this.subs = this.searchRequest$.subscribe((value) =>
+      this.searchCharacter(value)
+    );
+    //4 Получаем число отфильтрованных персонажей
+    //5 Получаем число страниц с отфильтрованными персонажами
+    this.subs = this.filteredCharacters$.subscribe((value) =>
+      this.totalPagesFiltered$.next(
+        this.calculateNumberOfPages(value, this.cardsOnPage$.value)
+      )
+    );
+
+    //6 Получаем текущую страницу - приходит из кард-лист
+
+    //7 Получаем персонажи отфильтрованные для текущей страницы
+    this.subs = this.currentPage$.subscribe((value) =>
+      this.getCharactersForCurrentPage(value)
+    );
+
+    // this.subs = this.filteredCharacters$.subscribe((value) =>
+    //   this.getCharactersForCurrentPage(value)
+    // );
+  }
+
+  getCharactersForCurrentPage(currentPage: number) {
+    if (currentPage === 1 || currentPage > this.totalPagesFiltered$.value) {
+      this.filteredCharactersOnCurrentPage$.next(
+        this.filteredCharacters$.value.slice(
+          currentPage * this.cardsOnPage$.value,
+          currentPage * this.cardsOnPage$.value + this.cardsOnPage$.value
+        )
+      );
+      return;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+  }
+
+  //Считаем страницы
+  calculateNumberOfPages(value: CharacterInterface[], cards: number) {
+    return Math.ceil(value.length / cards);
+  }
+
+  resolvingDataForCardsListComponent() {
+    if (!this.dataFetched$.value) {
+      console.log('Start fetching All characters');
+      return this.getAllCharacters();
+    }
+    console.log('Doesn t fetching All characters');
+    return this.filteredCharacters$;
+  }
+
+  // Функция для получения данных. Изначально проверяет ЛокалСторедж, если пусто лезет в API
+  // При получении данных через API сохраняем в ЛокалСторедж
+  getAllCharacters() {
+    this.dataFetched$.next(true);
+    console.log('Get All characters started');
+    const localStorageData = this.fetchCharactersLocal();
+    this.fetchError$.next(false);
+    if (localStorageData) {
+      this.charactersFetched$.next(localStorageData);
+      this.filteredCharacters$.next(localStorageData);
+    } else {
+      const req = this.http
+        .get<CharacterInterface[]>(this.baseUrl + this.routeAll)
+        .pipe(
+          retry(5),
+          catchError((err) => {
+            return this.handleError(err);
+          })
+        )
+        // catchError(this.handleError)) - В таком варианте не работает пространство имен в хендлере - хендлер не видит переменные и Объекты из Класса.
+        .subscribe((data) => {
+          this.charactersFetched$.next(data);
+          this.filteredCharacters$.next(data);
+          this.saveCharactersLocal(data);
+        });
+    }
+    // this.getCharactersForCurrentPage(); Закоментил - перенес в конструктор, Посмотреть как работает!
+    return this.charactersFetched$;
+  }
+
+  //Сохраняем всех персонажей в ЛокалСторедж
+  saveCharactersLocal(value: CharacterInterface[]) {
+    localStorage.setItem('characters', JSON.stringify(value));
+  }
+
+  //Получаем всех персонажей из ЛокалСторедж, если ничего нет - возвращаем явно false
+  fetchCharactersLocal() {
+    const charLocal = localStorage.getItem('characters');
+    if (charLocal) {
+      return JSON.parse(charLocal);
+    }
+    return false;
+  }
+
+  //Функция поиска по базе персонажей по введенной строке. Поиск идет по каждому слову и по части слова. Плюс перед проверкой все приводится к ЛоверКейс для более качественного поиска.
+  searchCharacter(data: string) {
+    //Пустой запрос? Получи всех персонажей снова в полном объеме
+    if (data === '') {
+      this.filteredCharacters$.next(this.charactersFetched$.value);
+      console.log('renew filtered Characters');
+      return;
+    }
+    const searchValue = new RegExp(data.toLocaleLowerCase());
+    const subs = this.charactersFetched$
+      .pipe(
+        map((characters) =>
+          characters.filter((character) => {
+            return searchValue.test(character.name.toLocaleLowerCase());
+          })
+        )
+      )
+      .subscribe((value) => this.filteredCharacters$.next(value));
+
+    // Куда это??????
+    this.router.navigate(['/list/1']);
+    this.currentPage$.next(1);
+    this.totalPagesFiltered$.next(
+      this.calculateNumberOfPages(
+        this.filteredCharacters$.value,
+        this.cardsOnPage$.value
+      )
+    );
+    subs.unsubscribe();
+  }
+
+  setCurrentPage(pageNumber: number) {
+    console.log('Lunched SetCurrent Page');
+    if (pageNumber > 1 && pageNumber <= this.totalPagesFiltered$.value) {
+      this.currentPage$.next(pageNumber);
+      // this.router.navigate(['/list/' + this.currentPage$.value]);
+      this.getCharactersForCurrentPage(this.currentPage$.value);
+    } else {
+      this.currentPage$.next(1);
+      this.router.navigate(['/list/1']);
+      this.getCharactersForCurrentPage(this.currentPage$.value);
+    }
+  }
+
+  //Ловим ошибки по API обычный хендлер плюс ставим ошибку в ФетчЭррор
+  private handleError(error: HttpErrorResponse) {
+    console.log('ERROR');
+    this.fetchError$.next(true);
+
+    if (error.status === 0) {
+      // A client-side or network error occurred. Handle it accordingly.
+      console.error('An error occurred:', error.error);
+    } else {
+      // The backend returned an unsuccessful response code.
+      // The response body may contain clues as to what went wrong.
+      console.error(
+        `Backend returned code ${error.status}, body was: `,
+        error.error
+      );
+    }
+    // Return an observable with a user-facing error message.
+    return throwError(
+      () => new Error('Something bad happened; please try again later.')
+    );
+  }
+}

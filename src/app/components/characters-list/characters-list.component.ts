@@ -7,6 +7,8 @@ import { FetchErorrComponent } from '../../ui/fetch-error/fetch-error.component'
 import { ActivatedRoute, Router } from '@angular/router';
 import { PaginationComponent } from '../../ui/pagination/pagination.component';
 import { map, BehaviorSubject, Subscription } from 'rxjs';
+import { CssSelector } from '@angular/compiler';
+import { CharacterInterface } from '../../shared/character.interface';
 
 @Component({
   selector: 'app-characters-list',
@@ -25,6 +27,8 @@ export class CharactersListComponent implements OnInit {
   // cardsTotal$ = new BehaviorSubject<number>(0);
   // cardsOnPage: number = 10;
   currentPage: number = 1;
+  characters: CharacterInterface[] = [];
+  pages: number = 0;
   // totalPages$ = new BehaviorSubject<number>(0);
   subs!: Subscription;
 
@@ -32,32 +36,33 @@ export class CharactersListComponent implements OnInit {
     public cService: CharactersService,
     private route: ActivatedRoute,
     private router: Router
-  ) {
-  }
+  ) {}
 
   ngOnInit(): void {
     // this.cService.getAllCharacters();
     // console.log(this.cService.filteredCharacters$);
-    this.subs = this.route.params.subscribe(params =>
-    {
-      
-      this.currentPage = Number(params['p'])
-    
+    console.log('Character-lists STARTED!: ');
+    // this.subs = this.route.params.subscribe((params) =>
+    //   this.cService.onChangePage(Number(params['p']))
+    // );
+
     // С снапшотом не перегружается страница при нажатии на routerLink. Надо брать Обсерваблс
     // const page = Number(this.route.snapshot.params['p']);
+    console.log('characters', this.cService.characters$.value);
 
-    if (this.currentPage > 1 && this.currentPage <= this.cService.totalPages$.value) {
-      console.log('P > 1');
-    } else {
-      console.log('P = 1');
-      this.currentPage = 1;
-      this.router.navigate(['/list/1'])
-    }
-    })
+    this.cService.pages$.subscribe((v) => console.log('pages', v));
+    this.cService.currentPage$.subscribe((v) => console.log('currentPage', v));
+
+    this.subs = this.cService.characters$.subscribe((value) => {
+      this.characters = value;
+      console.log(value);
+    });
+    // this.subs = this.cService.currentPage$.subscribe(value => this.currentPage = value)
+    // this.subs = this.cService.pages$.subscribe(value => this.pages = value)
   }
 
   onSearch(event: string) {
-    this.cService.searchCharacter(event);
-    console.log('Get event in list: ', event);
+    this.cService.onSearchButton(event);
+    console.log('Search button: ', event);
   }
 }
