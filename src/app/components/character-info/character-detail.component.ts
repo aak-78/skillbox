@@ -2,7 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { CharactersService } from '../../shared/characters.service';
-import { CharacterInterface } from '../../shared/character.interface';
+import { CardInterface } from '../../shared/card.interface';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-character-info',
@@ -12,8 +13,11 @@ import { CharacterInterface } from '../../shared/character.interface';
   styleUrls: ['./character-detail.component.scss'],
 })
 export class CharacterInfoComponent implements OnInit {
-  id = 0;
-  character: CharacterInterface = {
+  subs!: Subscription;
+  currentPage: number = 0;
+  search: string = '';
+
+  card: CardInterface = {
     id: 0,
     name: '',
     height: 0,
@@ -43,12 +47,20 @@ export class CharacterInfoComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // this.cService.getAllCharacters()
-    // const id = Number(this.route.snapshot.params['id']);
-    // const character = this.cService.charactersFetched$.value
-    // console.log('Card info: ', id,  character);
-    this.id = this.route.snapshot.params['id'];
-    this.character = this.cService.characters$.value[this.id];
-    console.log(this.id);
+    this.subs = this.cService.card$.subscribe((value) => (this.card = value));
+    this.subs = this.cService.currentPage$.subscribe(
+      (value) => (this.currentPage = value)
+    );
+    this.subs = this.cService.currentPage$.subscribe(
+      (value) => (this.currentPage = value)
+    );
+    this.subs = this.cService.currentPage$.subscribe(
+      (value) => (this.currentPage = value)
+    );
+    this.subs = this.cService.currentPage$.subscribe(
+      (value) => (this.currentPage = value)
+    );
+
+
   }
 }

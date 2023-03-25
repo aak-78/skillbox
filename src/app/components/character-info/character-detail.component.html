@@ -1,13 +1,15 @@
 <div class="card__wrapper">
-  <button routerLink="/">На главную страницу</button>
+  <button routerLink="/{{ currentPage }}">
+    Назад к персонажам
+  </button>
   <h3 class="card__title">
     Страница персонажа
-    <br />{{ character.name }} <br />{{ character.id }}
+    <br />{{ card.name }} <br />{{ card.id }}
   </h3>
   <div>
     <div></div>
   </div>
-  <img src="{{ character.image }}" alt="" />
+  <img src="{{ card.image }}" alt="" />
   <div class="card__info-common"></div>
   <div class="card__info-films"></div>
 </div>

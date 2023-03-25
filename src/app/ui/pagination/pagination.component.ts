@@ -17,25 +17,14 @@ import { RouterModule } from '@angular/router';
   templateUrl: './pagination.component.html',
   styleUrls: ['./pagination.component.scss'],
 })
-export class PaginationComponent implements OnInit, OnChanges {
+export class PaginationComponent implements OnInit {
   pagesArray: number[] = [];
-  subs: Subscription;
+  @Input() currentPage: number = 0;
+  @Input() pages: number = 0;
 
-  constructor(public cService: CharactersService) {
-    this.subs = cService.pages$.subscribe((value) => {
-      this.pagesArray = [...Array(value).keys()].map((el) => el + 1);
-    });
-  }
+  constructor(public cService: CharactersService) {}
 
   ngOnInit(): void {
-    // this.totalPages = Math.ceil(
-    //     this.cardsTotal / this.cardsOnPage
-    //   );
-    // this.pagesArray = [...Array(this.cService.totalPagesFiltered$.value).keys()].map(
-    //   (el) => el + 1
-    // );
-  }
-  ngOnChanges(changes: SimpleChanges): void {
-    // console.log(changes['totalPages'].currentValue);
+    this.pagesArray = [...Array(this.pages).keys()].map((el) => el + 1);
   }
 }

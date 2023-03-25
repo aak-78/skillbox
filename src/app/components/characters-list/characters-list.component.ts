@@ -6,9 +6,8 @@ import { SearchBarComponent } from 'src/app/ui/search-bar/search-bar.component';
 import { FetchErorrComponent } from '../../ui/fetch-error/fetch-error.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PaginationComponent } from '../../ui/pagination/pagination.component';
-import { map, BehaviorSubject, Subscription } from 'rxjs';
-import { CssSelector } from '@angular/compiler';
-import { CharacterInterface } from '../../shared/character.interface';
+import { Subscription } from 'rxjs';
+import { CardInterface } from '../../shared/card.interface';
 
 @Component({
   selector: 'app-characters-list',
@@ -26,43 +25,43 @@ import { CharacterInterface } from '../../shared/character.interface';
 export class CharactersListComponent implements OnInit {
   // cardsTotal$ = new BehaviorSubject<number>(0);
   // cardsOnPage: number = 10;
+
   currentPage: number = 1;
-  characters: CharacterInterface[] = [];
+  cards: CardInterface[] = [];
   pages: number = 0;
-  // totalPages$ = new BehaviorSubject<number>(0);
+  search: string = '';
+  error: boolean = false;
   subs!: Subscription;
 
   constructor(
-    public cService: CharactersService,
+    private cService: CharactersService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
 
   ngOnInit(): void {
-    // this.cService.getAllCharacters();
-    // console.log(this.cService.filteredCharacters$);
-    console.log('Character-lists STARTED!: ');
-    // this.subs = this.route.params.subscribe((params) =>
-    //   this.cService.onChangePage(Number(params['p']))
-    // );
-
-    // С снапшотом не перегружается страница при нажатии на routerLink. Надо брать Обсерваблс
-    // const page = Number(this.route.snapshot.params['p']);
-    console.log('characters', this.cService.characters$.value);
-
-    this.cService.pages$.subscribe((v) => console.log('pages', v));
-    this.cService.currentPage$.subscribe((v) => console.log('currentPage', v));
-
-    this.subs = this.cService.characters$.subscribe((value) => {
-      this.characters = value;
-      console.log(value);
-    });
-    // this.subs = this.cService.currentPage$.subscribe(value => this.currentPage = value)
-    // this.subs = this.cService.pages$.subscribe(value => this.pages = value)
+    //Блок подписок
+    //1. На cards
+    this.subs = this.cService.cardsOnCurrentPage$.subscribe(
+      (value) => (this.cards = value)
+    );
+    //2. На поиск
+    this.subs = this.cService.searchRequest$.subscribe(
+      (value) => (this.search = value)
+    );
+    //3. На текущую страниц
+    this.subs = this.cService.currentPage$.subscribe(
+      (value) => (this.currentPage = value)
+    );
+    //4. На страниц всего
+    this.subs = this.cService.pages$.subscribe((value) => (this.pages = value));
+    //5. Ошибка загрузки данных
+    this.subs = this.cService.fetchError$.subscribe(
+      (value) => (this.error = value)
+    );
   }
 
   onSearch(event: string) {
     this.cService.onSearchButton(event);
-    console.log('Search button: ', event);
   }
 }

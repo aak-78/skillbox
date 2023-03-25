@@ -1,6 +1,7 @@
+import { CharactersService } from './../../shared/characters.service';
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CharacterInterface } from '../../shared/character.interface';
+import { CardInterface } from '../../shared/card.interface';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -11,7 +12,7 @@ import { RouterModule } from '@angular/router';
   styleUrls: ['./character-card.component.scss'],
 })
 export class CharacterCardComponent {
-  @Input() character: CharacterInterface = {
+  @Input() card: CardInterface = {
     id: 0,
     name: '',
     height: 0,
@@ -34,10 +35,14 @@ export class CharacterCardComponent {
     apprentices: [],
     formerAffiliations: [],
   };
-  @Input() index: number = 0
+  @Input() index: number = 0;
+  @Input() currentPage: number = 0;
+  @Input() search: string = '';
 
   public handleMissingImage(event: Event) {
     (event.target as HTMLImageElement).style.display = 'none';
     console.log('Image replace');
   }
+
+  constructor(public cService: CharactersService) {}
 }

@@ -9,11 +9,11 @@ export const ROUTES: Route[] = [
     children: [
       {
         path: '',
-        redirectTo: '/list/1',
+        redirectTo: '1',
         pathMatch: 'full',
         },
       {
-        path: 'list/:p',
+        path: ':p',
         resolve: { CharacterListResolver },
         loadComponent: () =>
           import('./components/characters-list/characters-list.component').then(

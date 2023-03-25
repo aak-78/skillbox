@@ -1,4 +1,4 @@
-export interface CharacterInterface {
+export interface CardInterface {
   [x: string]: any;
   id: number;
   name: string;

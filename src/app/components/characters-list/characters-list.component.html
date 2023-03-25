@@ -1,25 +1,29 @@
 <h1 class="text-center">Добро пожаловать на сайт персонажей из Star Wars</h1>
 <p>
-  <!-- currentPage: {{ cService.currentPage$.value }}
-  pages: {{ cService.pages$.value }}
-  characters: {{ cService.characters$.value| json}} -->
+  currentPage: {{ currentPage }} pages: {{ pages }} cardsFiltered:
+  {{ cards.length }}
 </p>
 <div class="text-center">
   <app-search-bar (newSearch)="onSearch($event)"></app-search-bar>
 </div>
-<div *ngIf="cService.fetchError$ | async; else elseBlock">
+<div *ngIf="error else elseBlock">
   <app-fetcherror></app-fetcherror>
 </div>
 
 <ng-template #elseBlock>
   <div class="card-list__pagination">
-    <app-pagination></app-pagination>
-  </div>
-  <div *ngIf="characters" class="list__wrapper">
-    <ng-container *ngFor="let character of characters; index as i">
-      <app-character-card
-        [character]="character"
-        [index]="i"
+    <app-pagination
+      [currentPage]="currentPage"
+      [pages]="pages"
+      ></app-pagination>
+    </div>
+    <div *ngIf="cards" class="list__wrapper">
+      <ng-container *ngFor="let card of cards; index as i">
+        <app-character-card
+        [currentPage]="currentPage"
+        [search]="search"
+        [card]="card"
+        [index]="card.id - 1"
       ></app-character-card>
     </ng-container>
   </div>
