@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -13,6 +13,8 @@ import { FormsModule } from '@angular/forms';
         type="search"
         placeholder="имя персонажа"
         name="searchInput"
+        value="initialValue"
+        name="value"
       />
       <button type="submit">Поиск</button>
     </form>
@@ -22,6 +24,7 @@ import { FormsModule } from '@angular/forms';
   ],
 })
 export class SearchBarComponent {
+  @Input() initialValue: string = '';
   @Output() newSearch = new EventEmitter<string>();
   searchValue = '';
 

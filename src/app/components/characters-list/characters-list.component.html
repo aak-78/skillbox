@@ -2,9 +2,13 @@
 <p>
   currentPage: {{ currentPage }} pages: {{ pages }} cardsFiltered:
   {{ cards.length }}
+  {{search}}
 </p>
 <div class="text-center">
-  <app-search-bar (newSearch)="onSearch($event)"></app-search-bar>
+  <app-search-bar (newSearch)="onSearch($event)"
+  
+  [initialValue]="search"
+  ></app-search-bar>
 </div>
 <div *ngIf="error else elseBlock">
   <app-fetcherror></app-fetcherror>

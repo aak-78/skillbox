@@ -59,6 +59,7 @@ export class CharactersListComponent implements OnInit {
     this.subs = this.cService.fetchError$.subscribe(
       (value) => (this.error = value)
     );
+    console.log(this.search)
   }
 
   onSearch(event: string) {

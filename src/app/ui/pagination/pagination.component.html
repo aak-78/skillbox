@@ -1,24 +1,25 @@
 <!-- <a *ngFor="let page of pagesArray">{{ page }}</a> -->
 <p>Выберите нужную страницу</p>
 {{currentPage}}, {{pages}}
+{{paramsInQuery | json}}
 
-<a *ngIf="currentPage > 3" routerLink="/1">1 <<</a>
+<a *ngIf="currentPage > 3" [routerLink]="['/1']" [queryParams]="paramsInQuery">1 <<</a>
 <a
   *ngIf="currentPage - 1 > 1"
   routerLink="/{{ currentPage - 1 }}"
->
+[queryParams]="paramsInQuery">
   < {{ currentPage - 1 }}
 </a>
 <a
   *ngIf="currentPage - 1 > 1"
   routerLink="/{{ currentPage - 2 }}"
->
+[queryParams]="paramsInQuery">
   {{ currentPage - 2 }}
 </a>
 <a
   *ngIf="currentPage > 1"
   routerLink="/{{ currentPage - 1 }}"
->
+[queryParams]="paramsInQuery">
   {{ currentPage - 1 }}
 </a>
 <a *ngIf="pages > 1" class="current">
@@ -27,23 +28,23 @@
 <a
   *ngIf="pages >= currentPage + 1"
   routerLink="/{{ currentPage + 1 }}"
->
+[queryParams]="paramsInQuery">
   {{ currentPage + 1 }}
 </a>
 <a
   *ngIf="pages >= currentPage + 2"
   routerLink="/{{ currentPage + 2 }}"
->
+[queryParams]="paramsInQuery">
   {{ currentPage + 2 }}
 </a>
 <a
   *ngIf="pages > currentPage + 1"
   routerLink="/{{ currentPage + 1 }}"
->
+[queryParams]="paramsInQuery">
   {{ currentPage + 1 }} ></a
 ><a
   *ngIf="pages > currentPage + 2"
   routerLink="/{{ pages }}"
->
+[queryParams]="paramsInQuery">
   >> {{ pages }}
 </a>

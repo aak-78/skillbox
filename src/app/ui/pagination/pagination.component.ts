@@ -19,12 +19,16 @@ import { RouterModule } from '@angular/router';
 })
 export class PaginationComponent implements OnInit {
   pagesArray: number[] = [];
+  paramsInQuery: {} = {}
   @Input() currentPage: number = 0;
   @Input() pages: number = 0;
+  @Input() search: string = '';
 
   constructor(public cService: CharactersService) {}
 
   ngOnInit(): void {
     this.pagesArray = [...Array(this.pages).keys()].map((el) => el + 1);
+    console.log("search: ", this.search)
+    this.search ? this.paramsInQuery = { 'search': this.search } : null
   }
 }

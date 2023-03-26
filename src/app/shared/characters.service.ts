@@ -12,6 +12,7 @@ import {
   map,
   combineLatest,
   of,
+  tap,
 } from 'rxjs';
 
 @Injectable({
@@ -106,19 +107,33 @@ export class CharactersService implements OnDestroy {
     //Проверка есть ли данные - страница была только что загружена или уже есть данные
     if (this._dataFetched) {
       //Данные получены
-      this.getCardsOnCurrentPage(search, currentPage, this._cardsOriginal);
+      this._cardsOnCurrentPage.next(this.filterCardsByCurentPage(this._cardsFiltered.value, currentPage));
     } else {
       // Данные не получены
-      this._subs = this.fetchDataApi().subscribe((value) => {
-        this.getCardsOnCurrentPage(search, currentPage, value);
-        this._cardsFiltered.next(value);
-        this._cardsOriginal = value;
-        // this._pages.next(this.getTotalPages(value));
-      });
+      this._subs = this.fetchDataApi()
+        .pipe(
+          map((value) => {
+            this._cardsOriginal = value;
+            if (search !== '') {
+              
+            return this.filterCardsBuSearch(search, value);
+            }
+            return value
+          })
+        )
+        .subscribe((value) => {
+          this._cardsFiltered.next(value);
+          this._cardsOnCurrentPage.next( this.filterCardsByCurentPage(
+            value,
+            currentPage,
+          ))
+          this._pages.next(this.getTotalPages(value))
+          // this._pages.next(this.getTotalPages(value));
+        });
       this._dataFetched = true;
     }
 
-    this._dataFetched = true;
+    // this._dataFetched = true;
     this._currentPage.next(currentPage);
     this._searchRequest.next(search);
     return this._cardsFiltered;
@@ -212,9 +227,9 @@ export class CharactersService implements OnDestroy {
     this._searchRequest.next(_searchRequest);
     let data;
 
-    data = this.filterCardsBuSearch(_searchRequest);
-    this._cardsFiltered.next(data);
-    this.getCardsOnCurrentPage(_searchRequest, 1);
+    // data = this.filterCardsBuSearch(_searchRequest);
+    // this._cardsFiltered.next(data);
+    // this.getCardsOnCurrentPage(_searchRequest, 1, data);
 
     // this._cardsFiltered.next(this.getCardsOnCurrentPage(_searchRequest))
     this.router.navigate(['/1'], {
