@@ -1,10 +1,12 @@
 <div class="card__wrapper">
-  <button routerLink="/{{ currentPage }}">
-    Назад к персонажам
-  </button>
+  <a [routerLink]="['/', currentPage]" [queryParams]="{search: search}">
+    <button >
+      Назад к персонажам
+    </button>
+  </a>
   <h3 class="card__title">
     Страница персонажа
-    <br />{{ card.name }} <br />{{ card.id }}
+    <br />{{ card.name  }} <br />{{ card.id }}
   </h3>
   <div>
     <div></div>

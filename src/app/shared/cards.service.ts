@@ -10,49 +10,61 @@ import {
   throwError,
   Subscription,
   map,
-  combineLatest,
   of,
-  tap,
+  multicast,
 } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
-export class CharactersService implements OnDestroy {
+export class CardsService implements OnDestroy {
   //Точка входа в API
   baseUrl = 'https://akabab.github.io/starwars-api/api';
   routeAll = '/all.json';
   routeId = '/id';
 
-  //Данные
+  //Данные приватные
   //Персонажы полученные по API исходные
+  //Все карточки
   private _cardsOriginal: CardInterface[] = [];
-  //Карточек на странице
-  private _cardsPerPage: number = 10;
+  //Офильтрованные по поиску
+  private cardsFiltered: CardInterface[] = [];
+  // Карты на текущей странице
+  private _cardsonPage: CardInterface[] = [];
+
+  //Страницы
+  //Текущая
+  private currentPage: number = 1;
+  //Всего с учетом фильтрации - для пагинации
+  private pages: number = 1;
+
+  //Сервсиные переменные
   //Данные загружены
   private _dataFetched = false;
+  //Карточек на странице
+  private _cardsPerPage: number = 10;
+  //Поисковый запрос
+  private searchRequest: string = '';
+  //ID карточки для детального просмотра
+  private _detailCardId: number = 0;
+
+  public id$ = new BehaviorSubject<number>(0)
+
+  //Данные
   //Подписка для отписки
   private _subs!: Subscription;
   //Текущий запрос поиска
-  private _searchRequest = new BehaviorSubject<string>('');
-  public searchRequest$ = this._searchRequest.asObservable();
+  public searchRequest$ = new BehaviorSubject<string>('');
   //Персонажы полученные по API и фильтруемые
-  private _cardsFiltered = new BehaviorSubject<CardInterface[]>([]);
-  public cardsFiltered$ = this._cardsFiltered.asObservable();
+  public cardsFiltered$ = new BehaviorSubject<CardInterface[]>([]);
   //Персонажи на текущей странице.
-  private _cardsOnCurrentPage = new BehaviorSubject<CardInterface[]>([]);
-  public cardsOnCurrentPage$ = this._cardsOnCurrentPage.asObservable();
-  observableWithValue = of(null).pipe(
-    map(() => this._cardsOnCurrentPage.value)
-  );
+  public cardsOnCurrentPage$ = new BehaviorSubject<CardInterface[]>([]);
   //Ловим ошибку для отображения в шаблоне. Не стал делать спинеры в процессе загрузки, все достаточно быстро и плюс работаем в основном с локалстореджем, кроме картинок.
   public fetchError$ = new BehaviorSubject<boolean>(false);
   //Текущая страница - получаем из карт-лист
-  private _currentPage = new BehaviorSubject<number>(0);
-  public currentPage$ = this._currentPage.asObservable();
+  public currentPage$ = new BehaviorSubject<number>(0);
   //Всего страниц
-  private _pages = new BehaviorSubject<number>(0);
-  public pages$ = this._pages.asObservable();
+  public pages$ = new BehaviorSubject<number>(0);
   //ID карточки
   card: CardInterface = {
     id: 0,
@@ -77,8 +89,7 @@ export class CharactersService implements OnDestroy {
     apprentices: [],
     formerAffiliations: [],
   };
-  private _card = new BehaviorSubject<CardInterface>(this.card);
-  public card$ = this._card.asObservable();
+  public card$ = new BehaviorSubject<CardInterface>(this.card);
 
   // ------------------------------------------------------------------------------------------------------------------------
   constructor(private http: HttpClient, private router: Router) {
@@ -86,15 +97,62 @@ export class CharactersService implements OnDestroy {
   }
 
   // ------------------------------------------------------------------------------------------------------------------------
-  resolver(paramMap: ParamMap, queryParamMap: ParamMap) {
+
+  resolverDetailCard(paramMap: ParamMap, queryParamMap: ParamMap) {
+    //Получаем данные из URL
+    const id = Number(paramMap.get('id'));
+    //Очень веселая история - мы получаем Объект, он null. После его конвертации в STRING мы получаем строку "null" и фиг сравнишь с "" или null чистым, дает false!
+    //С Number норм отрабатывает, а со стринг фигня получается
+    // const search = String(queryParamMap.get('search'));
+    const currentPage = Number(queryParamMap.get('page'))
+      ? Number(queryParamMap.get('page'))
+      : 1;
+    this.searchRequest = queryParamMap.get('search')
+      ? String(queryParamMap.get('search'))
+      : '';
+
+    if (!this._dataFetched) {
+      // Данные не получены
+      this._subs = this.fetchDataApi().subscribe((value) => {
+        this._cardsOriginal = value;
+        this.card$.next(this._cardsOriginal[id]);
+      });
+      this._dataFetched = true;
+    }
+
+    // this._dataFetched = true;
+    
+    this.currentPage$.next(currentPage);
+    this.searchRequest$.next(this.searchRequest);
+    this.id$.next(id)
+    this.card$.next(this._cardsOriginal[id])
+    console.log(this._cardsOriginal)
+    return this._cardsOriginal;
+  }
+
+  resolverCardList(paramMap: ParamMap, queryParamMap: ParamMap) {
     //Получаем данные из URL
     const currentPage = Number(paramMap.get('p'));
-    const search = String(queryParamMap.get('search'));
+    //Очень веселая история - мы получаем Объект, он null. После его конвертации в STRING мы получаем строку "null" и фиг сравнишь с "" или null чистым, дает false!
+    //С Number норм отрабатывает, а со стринг фигня получается
+    // const search = String(queryParamMap.get('search'));
+    this.searchRequest = queryParamMap.get('search')
+      ? String(queryParamMap.get('search'))
+      : '';
     const id = Number(paramMap.get('id'));
+    const search = this.searchRequest;
 
     if (!currentPage) {
       //Нет текущей страницы или она была введена некоретно
-      this.router.navigate(['/1'], { queryParams: { search: search } });
+      if (search) {
+        //Если поле поиска не пусто - то
+        this.currentPage = 1;
+        this.router.navigate(['/1'], { queryParams: { search: search } });
+      } else {
+        //Поле поиска пусто
+        this.currentPage = 1;
+        this.router.navigate(['/1']);
+      }
     }
 
     // if (!id) {
@@ -107,36 +165,45 @@ export class CharactersService implements OnDestroy {
     //Проверка есть ли данные - страница была только что загружена или уже есть данные
     if (this._dataFetched) {
       //Данные получены
-      this._cardsOnCurrentPage.next(this.filterCardsByCurentPage(this._cardsFiltered.value, currentPage));
+      const newFilteredCards = search
+        ? this.filterCardsBuSearch(search, this._cardsOriginal)
+        : this._cardsOriginal;
+      this.cardsFiltered$.next(newFilteredCards);
+      this.cardsOnCurrentPage$.next(
+        this.filterCardsByCurentPage(newFilteredCards, currentPage)
+      );
+      this.pages$.next(this.getTotalPages(newFilteredCards));
+
+      this.cardsOnCurrentPage$.next(
+        this.filterCardsByCurentPage(this.cardsFiltered$.value, currentPage)
+      );
     } else {
       // Данные не получены
       this._subs = this.fetchDataApi()
         .pipe(
           map((value) => {
             this._cardsOriginal = value;
-            if (search !== '') {
-              
-            return this.filterCardsBuSearch(search, value);
+            if (search) {
+              return this.filterCardsBuSearch(search, value);
             }
-            return value
+            return value;
           })
         )
         .subscribe((value) => {
-          this._cardsFiltered.next(value);
-          this._cardsOnCurrentPage.next( this.filterCardsByCurentPage(
-            value,
-            currentPage,
-          ))
-          this._pages.next(this.getTotalPages(value))
-          // this._pages.next(this.getTotalPages(value));
+          this.cardsFiltered$.next(value);
+          this.cardsOnCurrentPage$.next(
+            this.filterCardsByCurentPage(value, currentPage)
+          );
+          this.pages$.next(this.getTotalPages(value));
+          // this.pages$.next(this.getTotalPages(value));
         });
       this._dataFetched = true;
     }
 
     // this._dataFetched = true;
-    this._currentPage.next(currentPage);
-    this._searchRequest.next(search);
-    return this._cardsFiltered;
+    this.currentPage$.next(currentPage);
+    this.searchRequest$.next(search);
+    return this.cardsFiltered$;
   }
   // ------------------------------------------------------------------------------------------------------------------------
 
@@ -160,37 +227,9 @@ export class CharactersService implements OnDestroy {
     // catchError(this.handleError)) - В таком варианте не работает пространство имен в хендлере - хендлер не видит переменные и Объекты из Класса.
   }
 
-  //Метод получения карточек на текущую страницу. Фильтрует по поиску и текущей странице
-  getCardsOnCurrentPage(
-    searchRequest: string = this._searchRequest.value,
-    currentPage: number = this._currentPage.value,
-    cards: CardInterface[] = this._cardsOriginal,
-    cardsPerPage: number = this._cardsPerPage
-  ) {
-    let filteredCards;
-    let pages;
-    let cardsOnPag;
-    if (!searchRequest) {
-      filteredCards = this.filterCardsBuSearch(searchRequest, cards);
-    } else {
-      filteredCards = cards;
-    }
-
-    pages = this.getTotalPages(cards, cardsPerPage);
-    cardsOnPag = this.filterCardsByCurentPage(
-      filteredCards,
-      currentPage,
-      cardsPerPage
-    );
-
-    this._cardsFiltered.next(filteredCards);
-    this._pages.next(pages);
-    this._cardsOnCurrentPage.next(cardsOnPag);
-  }
-
   //Считаем сколько страниц с учетом фильтрации
   getTotalPages(
-    cards: CardInterface[] = this._cardsFiltered.value,
+    cards: CardInterface[] = this.cardsFiltered$.value,
     cardsOnPage: number = this._cardsPerPage
   ) {
     return Math.ceil(cards.length / cardsOnPage);
@@ -223,18 +262,23 @@ export class CharactersService implements OnDestroy {
     throw new Error('Method not implemented.');
   }
 
-  onSearchButton(_searchRequest: string) {
-    this._searchRequest.next(_searchRequest);
+  onSearchButton(searchRequest: string) {
     let data;
+    data = this.filterCardsBuSearch(searchRequest);
 
-    // data = this.filterCardsBuSearch(_searchRequest);
-    // this._cardsFiltered.next(data);
-    // this.getCardsOnCurrentPage(_searchRequest, 1, data);
+    this.searchRequest$.next(searchRequest);
+    this.cardsFiltered$.next(data);
+    this.cardsOnCurrentPage$.next(this.filterCardsByCurentPage(data, 1));
+    this.pages$.next(this.getTotalPages(data));
+    this.currentPage$.next(1);
 
-    // this._cardsFiltered.next(this.getCardsOnCurrentPage(_searchRequest))
-    this.router.navigate(['/1'], {
-      queryParams: { search: this._searchRequest.value },
-    });
+    if (searchRequest) {
+      this.router.navigate(['/1'], {
+        queryParams: { search: searchRequest },
+      });
+    } else {
+      this.router.navigate(['/1']);
+    }
   }
 
   //Данные песонажа в личную детальную карточку
@@ -262,6 +306,7 @@ export class CharactersService implements OnDestroy {
     );
   }
 }
+
 // ------------------------------------------------------------------------------------------------------------------------
 //
 //

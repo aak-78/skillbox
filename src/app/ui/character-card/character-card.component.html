@@ -1,8 +1,7 @@
 <div class="card__wrapper" >
-  <a href="" [routerLink]="['/detail', card.id]" [queryParams]="{page: currentPage, search: search}">
+  <a [routerLink]="['/detail', card.id]" [queryParams]="{page: currentPage, search: search}">
 
     <div class="card__img-wrapper">
-      {{card.id}}
       <img src="{{ card.image }}" alt="{{ card.name }} image" />
     </div>
     <p>{{ card.name }}</p>

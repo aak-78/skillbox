@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 
 import { CharactersListComponent } from './components/characters-list/characters-list.component';
 import { FetchErorrComponent } from './ui/fetch-error/fetch-error.component';
-import { CharactersService } from './shared/characters.service';
+import { CardsService } from './shared/cards.service';
 
 @Component({
   selector: 'app-root',
@@ -19,5 +19,5 @@ import { CharactersService } from './shared/characters.service';
   ],
 })
 export class AppComponent {
-  constructor(public cService: CharactersService) {}
+  constructor(public cService: CardsService) {}
 }

@@ -1,7 +1,8 @@
 import { Route } from '@angular/router';
 import { AppComponent } from './app.component';
 import { Page404Component } from './shared/page404.component';
-import { CharacterListResolver } from './shared/characters-list.resolver';
+import { CardListResolver } from './shared/card-list.resolver';
+import { CardDetailResolver } from './shared/card-detail.resolver';
 
 export const ROUTES: Route[] = [
   {
@@ -11,10 +12,10 @@ export const ROUTES: Route[] = [
         path: '',
         redirectTo: '1',
         pathMatch: 'full',
-        },
+      },
       {
         path: ':p',
-        resolve: { CharacterListResolver },
+        resolve: { CardListResolver },
         loadComponent: () =>
           import('./components/characters-list/characters-list.component').then(
             (mod) => mod.CharactersListComponent
@@ -22,7 +23,7 @@ export const ROUTES: Route[] = [
       },
       {
         path: 'detail/:id',
-        resolve: { CharacterListResolver },
+        resolve: { CardDetailResolver },
         loadComponent: () =>
           import('./components/character-info/character-detail.component').then(
             (mod) => mod.CharacterInfoComponent

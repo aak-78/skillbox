@@ -1,13 +1,9 @@
 <h1 class="text-center">Добро пожаловать на сайт персонажей из Star Wars</h1>
 <p>
-  currentPage: {{ currentPage }} pages: {{ pages }} cardsFiltered:
-  {{ cards.length }}
-  {{search}}
 </p>
 <div class="text-center">
   <app-search-bar (newSearch)="onSearch($event)"
-  
-  [initialValue]="search"
+    [searchValue]="search"
   ></app-search-bar>
 </div>
 <div *ngIf="error else elseBlock">
@@ -19,6 +15,7 @@
     <app-pagination
       [currentPage]="currentPage"
       [pages]="pages"
+      [search]="search"
       ></app-pagination>
     </div>
     <div *ngIf="cards" class="list__wrapper">

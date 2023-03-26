@@ -6,8 +6,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CharactersService } from '../../shared/characters.service';
-import { Subscription } from 'rxjs';
+import { CardsService } from '../../shared/cards.service';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -17,18 +16,24 @@ import { RouterModule } from '@angular/router';
   templateUrl: './pagination.component.html',
   styleUrls: ['./pagination.component.scss'],
 })
-export class PaginationComponent implements OnInit {
+export class PaginationComponent implements OnInit, OnChanges {
   pagesArray: number[] = [];
-  paramsInQuery: {} = {}
+  paramsInQuery: {} = {};
   @Input() currentPage: number = 0;
   @Input() pages: number = 0;
   @Input() search: string = '';
 
-  constructor(public cService: CharactersService) {}
+  constructor(public cService: CardsService) {}
+  ngOnChanges(changes: SimpleChanges): void {
+    this.paramsInQuery = this.search
+      ? (this.paramsInQuery = { search: this.search })
+      : {};
+  }
 
   ngOnInit(): void {
     this.pagesArray = [...Array(this.pages).keys()].map((el) => el + 1);
-    console.log("search: ", this.search)
-    this.search ? this.paramsInQuery = { 'search': this.search } : null
+    this.paramsInQuery = this.search
+      ? (this.paramsInQuery = { search: this.search })
+      : {};
   }
 }

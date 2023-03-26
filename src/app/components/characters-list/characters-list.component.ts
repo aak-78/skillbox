@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CharactersService } from '../../shared/characters.service';
+import { CardsService } from '../../shared/cards.service';
 import { CharacterCardComponent } from '../../ui/character-card/character-card.component';
 import { SearchBarComponent } from 'src/app/ui/search-bar/search-bar.component';
 import { FetchErorrComponent } from '../../ui/fetch-error/fetch-error.component';
@@ -34,7 +34,7 @@ export class CharactersListComponent implements OnInit {
   subs!: Subscription;
 
   constructor(
-    private cService: CharactersService,
+    private cService: CardsService,
     private route: ActivatedRoute,
     private router: Router
   ) {}
@@ -46,6 +46,7 @@ export class CharactersListComponent implements OnInit {
       (value) => (this.cards = value)
     );
     //2. На поиск
+
     this.subs = this.cService.searchRequest$.subscribe(
       (value) => (this.search = value)
     );
@@ -59,10 +60,13 @@ export class CharactersListComponent implements OnInit {
     this.subs = this.cService.fetchError$.subscribe(
       (value) => (this.error = value)
     );
-    console.log(this.search)
   }
 
   onSearch(event: string) {
+    // this.router.navigate(['/1'], {
+    //   queryParams: { search: event },
+    // });
+
     this.cService.onSearchButton(event);
   }
 }

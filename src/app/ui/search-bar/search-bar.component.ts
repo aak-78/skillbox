@@ -13,8 +13,7 @@ import { FormsModule } from '@angular/forms';
         type="search"
         placeholder="имя персонажа"
         name="searchInput"
-        value="initialValue"
-        name="value"
+        name="initialValue"
       />
       <button type="submit">Поиск</button>
     </form>
@@ -24,9 +23,8 @@ import { FormsModule } from '@angular/forms';
   ],
 })
 export class SearchBarComponent {
-  @Input() initialValue: string = '';
+  @Input() searchValue: string = '';
   @Output() newSearch = new EventEmitter<string>();
-  searchValue = '';
 
   onSubmit() {
     this.newSearch.emit(this.searchValue);

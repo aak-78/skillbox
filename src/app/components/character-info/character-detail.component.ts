@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { CharactersService } from '../../shared/characters.service';
+import { CardsService } from '../../shared/cards.service';
 import { CardInterface } from '../../shared/card.interface';
 import { Subscription } from 'rxjs';
 
@@ -16,6 +16,8 @@ export class CharacterInfoComponent implements OnInit {
   subs!: Subscription;
   currentPage: number = 0;
   search: string = '';
+  id: number = 0;
+  cards: CardInterface[] = [];
 
   card: CardInterface = {
     id: 0,
@@ -41,26 +43,20 @@ export class CharacterInfoComponent implements OnInit {
     formerAffiliations: [],
   };
 
-  constructor(
-    private route: ActivatedRoute,
-    public cService: CharactersService
-  ) {}
+  constructor(public cService: CardsService) {}
 
   ngOnInit(): void {
     this.subs = this.cService.card$.subscribe((value) => (this.card = value));
     this.subs = this.cService.currentPage$.subscribe(
-      (value) => (this.currentPage = value)
+      (value) => { this.currentPage = value; console.log(value) }
     );
-    this.subs = this.cService.currentPage$.subscribe(
-      (value) => (this.currentPage = value)
+    this.subs = this.cService.searchRequest$.subscribe(
+      (value) => (this.search = value)
     );
-    this.subs = this.cService.currentPage$.subscribe(
-      (value) => (this.currentPage = value)
-    );
-    this.subs = this.cService.currentPage$.subscribe(
-      (value) => (this.currentPage = value)
-    );
-
-
+    // this.subs = this.cService.id$.subscribe(
+    //   (value) => {
+    //     this.id = value;
+    //   this.card = this.cards[this.id]}
+    // );
   }
 }

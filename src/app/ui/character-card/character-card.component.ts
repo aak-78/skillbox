@@ -1,4 +1,4 @@
-import { CharactersService } from './../../shared/characters.service';
+import { CardsService } from '../../shared/cards.service';
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CardInterface } from '../../shared/card.interface';
@@ -44,5 +44,5 @@ export class CharacterCardComponent {
     console.log('Image replace');
   }
 
-  constructor(public cService: CharactersService) {}
+  constructor(public cService: CardsService) {}
 }

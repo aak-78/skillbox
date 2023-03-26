@@ -3,16 +3,17 @@ import {
   ResolveFn,
   RouterStateSnapshot,
 } from '@angular/router';
-import { CharacterInterface } from './card.interface';
+import { CardInterface } from './card.interface';
 import { inject } from '@angular/core';
-import { CharactersService } from './characters.service';
+import { CardsService } from './cards.service';
 
 // Получаем данные с localStorage или API если в сторедже нет ничего
-export const CharacteDetailResolver: ResolveFn<boolean> = (
+export const CardDetailResolver: ResolveFn<CardInterface[]> = (
   route: ActivatedRouteSnapshot,
   state: RouterStateSnapshot
 ) => {
-  return inject(CharactersService).resolveCardDetail(
-    Number(route.paramMap.get('id'))
+  return inject(CardsService).resolverDetailCard(
+    route.paramMap,
+    route.queryParamMap
   );
 };

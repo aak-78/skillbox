@@ -1,7 +1,5 @@
 <!-- <a *ngFor="let page of pagesArray">{{ page }}</a> -->
-<p>Выберите нужную страницу</p>
-{{currentPage}}, {{pages}}
-{{paramsInQuery | json}}
+<p *ngIf="pages > 1">Выберите нужную страницу</p>
 
 <a *ngIf="currentPage > 3" [routerLink]="['/1']" [queryParams]="paramsInQuery">1 <<</a>
 <a
