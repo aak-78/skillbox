@@ -17,9 +17,9 @@
 
 img {
   height: 100%;
-  max-width: var(--card-width);
-  border-radius: 8px;
+  width: 100%;
   margin: auto;
+  object-fit: scale-down;
 }
 
 .card__img-wrapper {

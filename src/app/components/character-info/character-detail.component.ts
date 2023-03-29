@@ -47,9 +47,9 @@ export class CharacterInfoComponent implements OnInit {
 
   ngOnInit(): void {
     this.subs = this.cService.card$.subscribe((value) => (this.card = value));
-    this.subs = this.cService.currentPage$.subscribe(
-      (value) => { this.currentPage = value; console.log(value) }
-    );
+    this.subs = this.cService.currentPage$.subscribe((value) => {
+      this.currentPage = value;
+    });
     this.subs = this.cService.searchRequest$.subscribe(
       (value) => (this.search = value)
     );

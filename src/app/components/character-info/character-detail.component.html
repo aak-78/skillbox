@@ -1,17 +1,108 @@
-<div class="card__wrapper">
-  <a [routerLink]="['/', currentPage]" [queryParams]="{search: search}">
-    <button >
-      Назад к персонажам
-    </button>
-  </a>
-  <h3 class="card__title">
-    Страница персонажа
-    <br />{{ card.name  }} <br />{{ card.id }}
-  </h3>
-  <div>
-    <div></div>
+<!-- Кнопка назад -->
+<div class="card">
+  <div class="card__header">
+    <a [routerLink]="['/', currentPage]" [queryParams]="{ search: search }">
+      <button>Назад к персонажам</button>
+    </a>
+    <!-- Титул персонажа -->
+    <div class="card__title">
+      <h3>Страница персонажа</h3>
+      <p>
+        {{ card.name }}
+      </p>
+    </div>
   </div>
-  <img src="{{ card.image }}" alt="" />
-  <div class="card__info-common"></div>
-  <div class="card__info-films"></div>
+  <div class="card__body">
+    <!-- Секия с картинкой -->
+    <div class="card__body-image">
+      <img src="{{ card.image }}" alt="" />
+    </div>
+    <div>
+      <!-- Секция с описание персонажа -->
+      <div class="card__body-section">
+        <h3>Персональная информация</h3>
+        <p>
+          <span>Имя: </span>
+          {{ card.name }}
+        </p>
+        <p>
+          <span>Рост: </span>
+          {{ card.height }}
+        </p>
+        <p>
+          <span>Масса: </span>
+          {{ card.mass }}
+        </p>
+        <p>
+          <span>Пол: </span>
+          {{ card.gender }}
+        </p>
+        <p>
+          <span>Родной мир: </span>
+          {{ card.homeworld }}
+        </p>
+        <p>
+          <span>Сcылка на вики: </span>
+          {{ card.wiki }}
+        </p>
+        <p>
+          <span>Родился: </span>
+          {{ card.born }}
+        </p>
+        <p>
+          <span>Место рождения: </span>
+          {{ card.bornLocation }}
+        </p>
+        <p>
+          <span>Умер: </span>
+          {{ card.died }}
+        </p>
+        <p>
+          <span>Место сметри: </span>
+          {{ card.diedLocation }}
+        </p>
+        <p>
+          <span>Расса: </span>
+          {{ card.species }}
+        </p>
+        <p>
+          <span>Цвето волос: </span>
+          {{ card.hairColor }}
+        </p>
+        <p>
+          <span>Цвет глаз: </span>
+          {{ card.eyeColor }}
+        </p>
+        <p>
+          <span>Цвет кожи: </span>
+          {{ card.skinColor }}
+        </p>
+        <p>
+          <span>Кибернетические части тела: </span>
+          {{ card.cybernetics }}
+        </p>
+      </div>
+      <!-- Секция с доп информацией -->
+      <div class="card__body-section">
+        <h3>Дополнительная информация</h3>
+
+        <p *ngIf="card.affiliations.length">
+          <span>Числится: </span>{{ card.affiliations
+          }}{{ card.affiliations.length }}
+        </p>
+        <p>
+          <span>Учителя: </span>
+          {{ card.masters }}
+        </p>
+        <p *ngIf="card.apprentices">
+          <span>Ученики: </span>
+          {{ card.apprentices }}
+        </p>
+        <p *ngIf="card.formerAffiliations.length !== 0">
+          <span>Ранее состоял: </span>
+          {{ card.formerAffiliations }}
+        </p>
+      </div>
+    </div>
+  </div>
 </div>

@@ -10,8 +10,6 @@ import {
   throwError,
   Subscription,
   map,
-  of,
-  multicast,
 } from 'rxjs';
 
 @Injectable({
@@ -27,11 +25,7 @@ export class CardsService implements OnDestroy {
   //Персонажы полученные по API исходные
   //Все карточки
   private _cardsOriginal: CardInterface[] = [];
-  //Офильтрованные по поиску
-  private cardsFiltered: CardInterface[] = [];
-  // Карты на текущей странице
-  private _cardsonPage: CardInterface[] = [];
-
+  
   //Страницы
   //Текущая
   private currentPage: number = 1;
@@ -44,7 +38,7 @@ export class CardsService implements OnDestroy {
   //Карточек на странице
   private _cardsPerPage: number = 10;
   //Поисковый запрос
-  private searchRequest: string = '';
+  private _searchRequest: string = '';
   //ID карточки для детального просмотра
   private _detailCardId: number = 0;
 
@@ -107,7 +101,7 @@ export class CardsService implements OnDestroy {
     const currentPage = Number(queryParamMap.get('page'))
       ? Number(queryParamMap.get('page'))
       : 1;
-    this.searchRequest = queryParamMap.get('search')
+    this._searchRequest = queryParamMap.get('search')
       ? String(queryParamMap.get('search'))
       : '';
 
@@ -123,10 +117,9 @@ export class CardsService implements OnDestroy {
     // this._dataFetched = true;
     
     this.currentPage$.next(currentPage);
-    this.searchRequest$.next(this.searchRequest);
+    this.searchRequest$.next(this._searchRequest);
     this.id$.next(id)
     this.card$.next(this._cardsOriginal[id])
-    console.log(this._cardsOriginal)
     return this._cardsOriginal;
   }
 
@@ -136,11 +129,11 @@ export class CardsService implements OnDestroy {
     //Очень веселая история - мы получаем Объект, он null. После его конвертации в STRING мы получаем строку "null" и фиг сравнишь с "" или null чистым, дает false!
     //С Number норм отрабатывает, а со стринг фигня получается
     // const search = String(queryParamMap.get('search'));
-    this.searchRequest = queryParamMap.get('search')
+    this._searchRequest = queryParamMap.get('search')
       ? String(queryParamMap.get('search'))
       : '';
     const id = Number(paramMap.get('id'));
-    const search = this.searchRequest;
+    const search = this._searchRequest;
 
     if (!currentPage) {
       //Нет текущей страницы или она была введена некоретно

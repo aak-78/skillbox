@@ -1,6 +1,6 @@
 a {
   padding: 0.5rem 1rem;
-  background: var(--body-accent);
+  background: var(--body-secondary);
   border: 1px dotted black;
   margin: 0.1rem;
   border-radius: 0.25rem;
@@ -19,5 +19,5 @@ p {
 }
 
 .current {
-  background-color: red;
+  background-color: var(--body-accent);
 }
